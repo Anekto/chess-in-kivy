@@ -68,7 +68,7 @@ def tower(new_Pos, pos_V, layout, piece_pos, dest_pos):
 
     valid_move = False
 
-    if wT == layout[piece_pos[0]][piece_pos[1]]:
+    if wT == layout[piece_pos[0]][piece_pos[1]] or wKK == layout[piece_pos[0]][piece_pos[1]]:
         if layout[dest_pos[0]][dest_pos[1]] in black_Pieces:
             valid_move = True
 
@@ -98,7 +98,7 @@ def tower(new_Pos, pos_V, layout, piece_pos, dest_pos):
             elif new_Pos[0] != 0 and new_Pos[1] != 0:
                 valid_move = False
 
-    if sT == layout[piece_pos[0]][piece_pos[1]]:
+    if sT == layout[piece_pos[0]][piece_pos[1]] or sKK == layout[piece_pos[0]][piece_pos[1]]:
         if layout[dest_pos[0]][dest_pos[1]] in white_Pieces:
             valid_move = True
 
@@ -139,7 +139,7 @@ def slider(new_Pos, pos_V, layout, piece_pos, dest_pos):
 
     print( "PIECE", layout[piece_pos[0]][piece_pos[1]], new_Pos, pos_V, piece_pos, dest_pos )
 
-    if wL == layout[piece_pos[0]][piece_pos[1]]:
+    if wL == layout[piece_pos[0]][piece_pos[1]] or wKK == layout[piece_pos[0]][piece_pos[1]]:
         if layout[dest_pos[0]][dest_pos[1]] in black_Pieces:
             valid_move = True
             if new_Pos[0] == new_Pos[1]: # if smaller than zero
@@ -172,7 +172,7 @@ def slider(new_Pos, pos_V, layout, piece_pos, dest_pos):
             else:
                 valid_move = False
 
-    if sL == layout[piece_pos[0]][piece_pos[1]]:
+    if sL == layout[piece_pos[0]][piece_pos[1]] or sKK == layout[piece_pos[0]][piece_pos[1]]:
         if layout[dest_pos[0]][dest_pos[1]] in white_Pieces:
             valid_move = True
             if new_Pos[0] == new_Pos[1]: # if smaller than zero
@@ -250,10 +250,16 @@ def queen(new_Pos, pos_V, layout, piece_pos, dest_pos):
 
     valid_move = False
 
-    if slider(new_Pos, pos_V, layout, piece_pos, dest_pos) or tower(new_Pos, pos_V, layout, piece_pos, dest_pos):
-        valid_move = True
+    if wKK == layout[piece_pos[0]][piece_pos[1]]:
+        
+        if slider(new_Pos, pos_V, layout, piece_pos, dest_pos) or tower(new_Pos, pos_V, layout, piece_pos, dest_pos):
+            valid_move = True
+
+    if sKK == layout[piece_pos[0]][piece_pos[1]]:
+        
+        if slider(new_Pos, pos_V, layout, piece_pos, dest_pos) or tower(new_Pos, pos_V, layout, piece_pos, dest_pos):
+            valid_move = True
+
+
 
     return valid_move
-
-
-
