@@ -4,9 +4,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button  # Import other UI elements you need
 from kivy.uix.gridlayout import GridLayout
 from kivy.properties import StringProperty
+from kivy.uix.image import Image
 
 
-from kivy.uix.label import Label  # Import the Label class
+
+#from kivy.uix.label import Label  # Import the Label class
 
 
 
@@ -28,7 +30,8 @@ class ChessBoard(GridLayout):
         self.cols = 8
         self.spacing = [5, 5]  # Set spacing in pixels
 
-        self.buffer = ["to", "", 0]
+        # stores to/from , button text, button id
+        self.buffer = ["to", "", 0, None]
         self.buttons = {}
         self.button_list = []
 
@@ -54,14 +57,15 @@ class ChessBoard(GridLayout):
                         f"{self.blank}" if i < 6 else
                         f"{self.black_Pieces[8]}" if i == 6 else
                         f"{self.black_Pieces[z]}"),
-                        background_color=(0.5, 0.5, 0.5, 1 )if c % 2 == 0 else
-                                        (1, 1, 1, 1 )
+                        background_color=(0.3, 0.3, 0.3, 1 )if c % 2 == 0 else
+                                        (0.6, 0.6, 0.6, 1 )
                                            
                         )
 
                 chess_button.button_id = f"{str(i + 1) + letter[z]}"
 
                 chess_button.bind(on_press=self.on_button_press)
+                chess_button.bind(on_release=self.on_release_button)
                 self.add_widget(chess_button)
                 self.buttons[chess_button.button_id] = chess_button # Store reference
                 self.button_list.append(chess_button)
@@ -71,8 +75,13 @@ class ChessBoard(GridLayout):
         if button_id in self.buttons:
             self.buttons[button_id].text = new_text
 
-    def on_button_press(self, instance):
+    def change_specific_button_color_by_id(self, button_id, new_color):
+        if button_id in self.buttons:
+            self.buttons[button_id].color = new_color
+    
 
+    def on_button_press(self, instance):
+        
 
         if self.buffer[0] == "from":
             self.buffer[0] = "to"
@@ -86,8 +95,21 @@ class ChessBoard(GridLayout):
                 ChessBoard.change_specific_button_text_by_id(self, self.buffer[2], "___")
                 instance.text = self.buffer[1]
                 shared_state.success = False
+            else:
+                pass
         else:
             self.buffer = ["from", instance.text, instance.button_id]
+
+    def on_release_button(self, instance):
+        instance.color = (0, 1, 1, 1)
+        print("BUTTON RELEASED")
+
+        if self.buffer[0] == "to": # Changes color of first and 2nd button back to normal
+            instance.color = (1, 1, 1, 1)
+            ChessBoard.change_specific_button_color_by_id(self, self.buffer[2], (1, 1, 1, 1))
+
+
+    
 
     def start_Game(self, start, turn, restart, pos1, pos2):
 
@@ -146,19 +168,24 @@ class MainScreen(Screen):
         layout = BoxLayout(orientation="vertical")
         label = Label(text="This is the Main Screen!")  # Corrected line
 
-        button_reset = Button(text="Reset Game")
+        button_quit = Button(text="Quit Game")
         button = Button(text="Go to Second Screen")
         button.bind(on_press=self.switch_to_second_screen)
         # BUTTON DOESNT WORK
-        #button_reset.bind(on_press=SecondScreen..reset_board)
-
-        layout.add_widget(button_reset)
+        button_quit.bind(on_press=self.quit_game)
+        
         layout.add_widget(button)
+        layout.add_widget(button_quit)
+        
         self.add_widget(layout)
 
     def switch_to_second_screen(self, instance):
         # Change screen manager's current screen to "second_screen"
         self.manager.current = "second_screen"
+
+
+    def quit_game(self, instance):
+        App.get_running_app().stop()
 
 
 
