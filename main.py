@@ -8,11 +8,11 @@ from kivy.uix.image import Image
 
 
 
-#from kivy.uix.label import Label  # Import the Label class
+from kivy.uix.label import Label  # Import the Label class
 
 
 
-# ... (your existing imports)
+# ... (existing imports)
 from kivy.properties import StringProperty
 
 import shared_state
@@ -20,6 +20,11 @@ import board_layout
 import play_Pieces
 import piece_Move_2
 import schachpruefung
+
+import fenstring_conv
+import stockfish_subprocess
+
+import torch_net
 
 class ChessButton(Button):
     button_id = StringProperty()
@@ -35,12 +40,18 @@ class ChessBoard(GridLayout):
         self.buttons = {}
         self.button_list = []
 
+        # start game engine stockfish for BOT plays
+
+        self.bot_engine = stockfish_subprocess.StockFish()
+
+        self.bot_engine.put("uci")
+        self.bot_engine.get()
 
         letter = ["a", "b", "c", "d", "e", "f", "g", "h"]
 
         # Create buttons for the chessboard
-        self.white_Pieces = ["wT", "wL", "wS", "wK", "wKK", "wS", "wL", "wT", "wB"]
-        self.black_Pieces = ["sT", "sL", "sS", "sK", "sKK", "sS", "sL", "sT", "sB"]
+        self.white_Pieces = ["wT", "wS", "wL", "wK", "wKK", "wL", "wS", "wT", "wB"]
+        self.black_Pieces = ["sT", "sS", "sL", "sK", "sKK", "sL", "sS", "sT", "sB"]
         self.blank = "__"
 
         c = 0
@@ -52,11 +63,11 @@ class ChessBoard(GridLayout):
 
                 chess_button = ChessButton(
                     text=(
-                        f"{self.white_Pieces[z]}" if i <= 0 else
-                        f"{self.white_Pieces[8]}" if i == 1 else
+                        f"{self.black_Pieces[z]}" if i <= 0 else
+                        f"{self.black_Pieces[8]}" if i == 1 else
                         f"{self.blank}" if i < 6 else
-                        f"{self.black_Pieces[8]}" if i == 6 else
-                        f"{self.black_Pieces[z]}"),
+                        f"{self.white_Pieces[8]}" if i == 6 else
+                        f"{self.white_Pieces[z]}"),
                         background_color=(0.3, 0.3, 0.3, 1 )if c % 2 == 0 else
                                         (0.6, 0.6, 0.6, 1 )
                                            
@@ -74,6 +85,8 @@ class ChessBoard(GridLayout):
     def change_specific_button_text_by_id(self, button_id, new_text):
         if button_id in self.buttons:
             self.buttons[button_id].text = new_text
+        elif button_id in self.button_list:
+            button_id.text = new_text
 
     def change_specific_button_color_by_id(self, button_id, new_color):
         if button_id in self.buttons:
@@ -82,12 +95,11 @@ class ChessBoard(GridLayout):
 
     def on_button_press(self, instance):
         
+        ###print(shared_state.state)
 
         if self.buffer[0] == "from":
             self.buffer[0] = "to"
             
-            print("\n Turn, reset, pos1,pos2", shared_state.turn, shared_state.game_info,  self.buffer[2], instance.button_id)
-
             ChessBoard.start_Game(self, True, shared_state.turn, shared_state.game_info,  self.buffer[2], instance.button_id)
             if shared_state.game_info == 1:
                 shared_state.game_info = 0
@@ -95,14 +107,38 @@ class ChessBoard(GridLayout):
                 ChessBoard.change_specific_button_text_by_id(self, self.buffer[2], "___")
                 instance.text = self.buffer[1]
                 shared_state.success = False
-            else:
-                pass
+
+                # initializing stockfish to the move to be made
+                fen_state = fenstring_conv.convert_fen(shared_state.state)
+
+                self.bot_engine.put(f"position fen {fen_state} b")
+                self.bot_engine.get()
+
+                self.bot_engine.put("go depth 1")
+                self.bot_engine.get()
+
+                while True:
+                    
+                    pos = self.bot_engine.get()
+                    if pos.startswith("bestmove"):
+                        pos = pos.split()
+                        pos = pos[1]
+                        break
+
+                bot_pos1 =[str(9 - int(pos[1])), pos[0]]
+                bot_pos2 = [str(9 - int(pos[3])), pos[2]]
+
+                # NEED TO CONVERT STOCKFISH NOTATION TO NUMBERS
+                ChessBoard.start_Game(self, True, shared_state.turn, shared_state.game_info, bot_pos1, bot_pos2)
+
+                ChessBoard.change_specific_button_text_by_id(self, bot_pos2[0] + bot_pos2[1], self.buttons[bot_pos1[0] + bot_pos1[1]].text)
+                ChessBoard.change_specific_button_text_by_id(self, bot_pos1[0] + bot_pos1[1], "___")
+                
         else:
             self.buffer = ["from", instance.text, instance.button_id]
 
     def on_release_button(self, instance):
         instance.color = (0, 1, 1, 1)
-        print("BUTTON RELEASED")
 
         if self.buffer[0] == "to": # Changes color of first and 2nd button back to normal
             instance.color = (1, 1, 1, 1)
@@ -118,16 +154,17 @@ class ChessBoard(GridLayout):
 
 
             if restart == 1:
+                # INITIALIZES THE GAME LAYOUT AND PLAYER TO 1
                 shared_state.player = 1
                 shared_state.state = board_layout.layout(start, play_Pieces.pieces())
                 restart = 0
             else:
+                # PRINTS THE LAYOUT
                 board_layout.layout(start, shared_state.state)
-
             try:
                 pos1 = [int(pos1[0]), play_Pieces.char_to_int(pos1[1] ) - 1]
                 pos2 = [int(pos2[0]), play_Pieces.char_to_int(pos2[1] ) - 1]
-                #print("\n Pos1,Pos2", pos1, pos2)
+                
             except:
                 print("Its not working")
 
@@ -135,10 +172,9 @@ class ChessBoard(GridLayout):
                 if shared_state.state[pos1[0]][pos1[1]] in self.white_Pieces[0:9]:
                     shared_state.success = True
                     shared_state.state = piece_Move_2.make_move(pos1, pos2, shared_state.state, turn, shared_state.player)
-                    print("It's whites turn")
+                    print("\nIt's whites turn")
                     if shared_state.success:
                         shared_state.player = 2
-
                 else:
                     shared_state.player = 1
                     print("Moved wrong color, player 1 please move again")
@@ -146,9 +182,9 @@ class ChessBoard(GridLayout):
                 if shared_state.state[pos1[0]][pos1[1]] in self.black_Pieces[0:9]:
                     shared_state.success = True
                     shared_state.state = piece_Move_2.make_move(pos1, pos2, shared_state.state, turn, shared_state.player)
-                    print("Its blacks turn")
+                    print("\nIts blacks turn")
                     if shared_state.success:
-                        shared_state.player = 1   
+                        shared_state.player = 1
                 else:
                     shared_state.player = 2
                     print("Moved wrong color, player 2 please move again")
@@ -156,8 +192,7 @@ class ChessBoard(GridLayout):
 
                 king_Kill = schachpruefung.schach(shared_state.state)
                 if king_Kill == True:
-                    print("Game over!")
-            
+                    print("\nGame over!\nGame over!\nGame over!\nGame over!\nGame over!")
             board_layout.layout(start, shared_state.state)
 
 
@@ -166,12 +201,12 @@ class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         layout = BoxLayout(orientation="vertical")
-        label = Label(text="This is the Main Screen!")  # Corrected line
+        label = Label(text="This is the Main Screen!")
 
-        button_quit = Button(text="Quit Game")
-        button = Button(text="Go to Second Screen")
+        button_quit = Button(text="Quit Game", background_color=(0.5, 0.5, 1, 0.5))
+        button = Button(text="Go to Second Screen", background_color=(1, 1, 0.5, 0.5))
         button.bind(on_press=self.switch_to_second_screen)
-        # BUTTON DOESNT WORK
+
         button_quit.bind(on_press=self.quit_game)
         
         layout.add_widget(button)
@@ -185,6 +220,10 @@ class MainScreen(Screen):
 
 
     def quit_game(self, instance):
+        torch_net.MyModel.save_model(torch_net.MyModel, shared_state.model)
+
+        print("Model saved.")
+
         App.get_running_app().stop()
 
 
