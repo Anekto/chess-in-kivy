@@ -40,8 +40,6 @@ def schach(layout):
                 if piece_Move_2.make_move([n, k], king_Pos[1], layout, None, None):
                     s_chk_Piece = [n, k]
 
-    w_chk_Piece = w_chk_Piece
-    s_chk_Piece = s_chk_Piece
 
     if w_chk_Piece == [] and s_chk_Piece == []:
         print("Nächster zug")

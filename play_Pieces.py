@@ -10,8 +10,8 @@ def pieces():
         str = "__" + h
         header.append(str)
     header.append("#")
-    white_Pieces = ["wT ", "wL ", "wS ", "wK ", "wKK", "wS ", "wL ", "wT "]
-    black_Pieces = ["sT ", "sL ", "sS ", "sK ", "sKK", "sS ", "sL ", "sT "]
+    white_Pieces = ["wT ", "wS ", "wL ", "wK ", "wKK", "wL ", "wS ", "wT "]
+    black_Pieces = ["sT ", "sS ", "sL ", "sK ", "sKK", "sL ", "sS ", "sT "]
     white_Pawn = []
     black_Pawn = []
 
@@ -24,13 +24,14 @@ def pieces():
 
 
     layout.append(header)
-    layout.append(white_Pieces)
-    layout.append(white_Pawn)
+    layout.append(black_Pieces)
+    layout.append(black_Pawn)
     for k in range(4):
         blank_Var = blank_Lines[0:8]
         layout.append(blank_Var)
-    layout.append(black_Pawn)
-    layout.append(black_Pieces)
+    layout.append(white_Pawn)
+    layout.append(white_Pieces)
+    
 
     for i in range(9):
         if i != 0:
@@ -57,3 +58,6 @@ def char_to_int(char):
         return 7
     if char == 'h':
         return 8
+    
+'''def stockfish_notation(num):
+    return 8 - num'''

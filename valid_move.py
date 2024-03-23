@@ -30,7 +30,7 @@ def pawn(new_Pos, pos_V, layout, piece_pos, dest_pos):
             valid_move = True
             if new_Pos[0] != 1:
                 valid_move = False
-        if new_Pos[0] == 2 and layout[piece_pos[0]][piece_pos[1]] in layout[2][piece_pos[1]]:
+        if new_Pos[0] == 2 and layout[piece_pos[0]][piece_pos[1]] in layout[7][piece_pos[1]]:
             valid_move = True
             if layout[dest_pos[0]][dest_pos[1]] in black_Pieces[0:9]:
                 valid_move = False
@@ -38,7 +38,7 @@ def pawn(new_Pos, pos_V, layout, piece_pos, dest_pos):
                 valid_move = False
             if new_Pos[1] >= 1:
                 valid_move = False
-        if pos_V[0] < 0:
+        if pos_V[0] > 0:
             valid_move = False
         return valid_move
 
@@ -51,7 +51,7 @@ def pawn(new_Pos, pos_V, layout, piece_pos, dest_pos):
             valid_move = True
             if new_Pos[0] != 1:
                 valid_move = False
-        if new_Pos[0] == 2 and layout[piece_pos[0]][piece_pos[1]] in layout[7][piece_pos[1]]:
+        if new_Pos[0] == 2 and layout[piece_pos[0]][piece_pos[1]] in layout[2][piece_pos[1]]:
             valid_move = True
             if layout[dest_pos[0]][dest_pos[1]] in white_Pieces[0:9]:
                 valid_move = False
@@ -59,7 +59,7 @@ def pawn(new_Pos, pos_V, layout, piece_pos, dest_pos):
                 valid_move = False
             if new_Pos[1] >= 1:
                 valid_move = False
-        if pos_V[0] > 0:
+        if pos_V[0] < 0:
             valid_move = False
         return valid_move
 
@@ -137,7 +137,7 @@ def slider(new_Pos, pos_V, layout, piece_pos, dest_pos):
 
     valid_move = False
 
-    print( "PIECE", layout[piece_pos[0]][piece_pos[1]], new_Pos, pos_V, piece_pos, dest_pos )
+    #print( "PIECE", layout[piece_pos[0]][piece_pos[1]], new_Pos, pos_V, piece_pos, dest_pos )
 
     if wL == layout[piece_pos[0]][piece_pos[1]] or wKK == layout[piece_pos[0]][piece_pos[1]]:
         if layout[dest_pos[0]][dest_pos[1]] in black_Pieces:
@@ -263,3 +263,6 @@ def queen(new_Pos, pos_V, layout, piece_pos, dest_pos):
 
 
     return valid_move
+
+
+

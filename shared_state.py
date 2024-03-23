@@ -4,3 +4,7 @@ player = 1
 success = False
 buttons_share = None
 turn = False
+mov_vec = [None, None]
+pos_FROM = []
+pos_TO = []
+model = None

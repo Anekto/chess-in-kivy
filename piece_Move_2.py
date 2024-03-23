@@ -48,7 +48,6 @@ def make_move(piece_pos, dest_pos, layout, turn, player):
         new_Pos[i] = abs(piece_pos[i] - dest_pos[i])
         pos_V[i] = dest_pos[i] - piece_pos[i]
 
-
     if layout[piece_pos[0]][piece_pos[1]] == wB or layout[piece_pos[0]][piece_pos[1]] == sB:
         valid = valid_move.pawn(new_Pos, pos_V, layout, piece_pos, dest_pos)
 
@@ -66,7 +65,6 @@ def make_move(piece_pos, dest_pos, layout, turn, player):
 
     if layout[piece_pos[0]][piece_pos[1]] == wKK or layout[piece_pos[0]][piece_pos[1]] == sKK:
         valid = valid_move.queen(new_Pos, pos_V, layout, piece_pos, dest_pos)
-
 
     if valid:
         if turn == None:
